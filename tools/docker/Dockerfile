@@ -28,4 +28,4 @@ RUN mkdir /build/lingodb
 #     -DLLVM_EXTERNAL_LIT=/build/llvm/bin/llvm-lit\
 #     -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Release
 
-# RUN cmake --build /build/lingodb -j$(nproc)
+RUN cmake --build /build/lingodb -j$(nproc)

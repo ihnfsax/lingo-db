@@ -1,11 +1,14 @@
 .idea
-build/
+build
+build_debug
+build_release
 test*.mlir
 test.sql
 resources/data/tpch-*
 resources/data/tpcds-*
 resources/data/job
 resources/data/ssb-*
+test_resources
 __pycache__
 llvm-jit-static.*
 perf-result.json

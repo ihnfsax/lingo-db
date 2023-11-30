@@ -38,7 +38,7 @@
 #include <limits>
 #include <stack>
 #include <unordered_set>
-namespace{
+namespace {
 struct TranslationContext;
 struct StringInfo {
    static bool isEqual(std::string a, std::string b) { return a == b; }
@@ -216,22 +216,25 @@ struct ReplaceState {
 };
 ExpressionType stringToExpressionType(const std::string& parserStr);
 struct Parser {
-   mlir::tuples::ColumnManager& attrManager;
-
-   std::string sql;
-   PgQueryInternalParsetreeAndError result;
-   runtime::Catalog& catalog;
-   std::vector<std::unique_ptr<FakeNode>> fakeNodes;
-
-   bool isParallelismAllowed() const;
-
    struct TargetInfo {
       std::vector<std::pair<std::string, const mlir::tuples::Column*>> namedResults;
       void map(std::string name, const mlir::tuples::Column* attr) {
          namedResults.push_back({name, attr});
       }
    };
+
+   mlir::tuples::ColumnManager& attrManager;
+   std::string sql;
+   PgQueryInternalParsetreeAndError result;
+   runtime::Catalog& catalog;
+   std::vector<std::unique_ptr<FakeNode>> fakeNodes;
    std::unordered_map<std::string, std::pair<mlir::Value, TargetInfo>> ctes;
+   mlir::ModuleOp moduleOp;
+   bool parallelismAllowed;
+
+   Parser(std::string sql, runtime::Catalog& catalog, mlir::ModuleOp moduleOp);
+
+   bool isParallelismAllowed() const;
    FakeNode* createFakeNode(std::string name, Node* original) {
       static size_t fakeNodeId = 0;
       std::string colId = "tmp_attr" + std::to_string(fakeNodeId++);
@@ -240,9 +243,6 @@ struct Parser {
       fakeNodes.emplace_back(std::move(node));
       return ptr;
    }
-   mlir::ModuleOp moduleOp;
-   bool parallelismAllowed;
-   Parser(std::string sql, runtime::Catalog& catalog, mlir::ModuleOp moduleOp);
 
    mlir::Value getExecutionContextValue(mlir::OpBuilder& builder) {
       mlir::func::FuncOp funcOp = moduleOp.lookupSymbol<mlir::func::FuncOp>("rt_get_execution_context");

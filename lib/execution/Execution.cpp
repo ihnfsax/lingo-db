@@ -15,6 +15,7 @@
 #include "mlir/Pass/PassManager.h"
 #include "utility/Tracer.h"
 
+#include <algorithm>
 #include <chrono>
 #include <sstream>
 #include <unordered_set>

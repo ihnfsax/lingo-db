@@ -1,0 +1,39 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/cpp
+{
+    "name": "lingo-db-dev", // the project name
+    "build": {
+        "dockerfile": "Dockerfile",
+        "args": {
+            "http_proxy": "http://10.252.1.75:7890",
+            "https_proxy": "http://10.252.1.75:7890",
+            "username": "ihnfsa"
+        }
+    },
+    // Features to add to the dev container. More info: https://containers.dev/features.
+    // "features": {},
+    // Use 'forwardPorts' to make a list of ports inside the container available locally.
+    // "forwardPorts": [],
+    // Use 'postCreateCommand' to run commands after the container is created.
+    // "postCreateCommand": "gcc -v",
+    // Configure tool-specific properties.
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-vscode.cpptools-extension-pack",
+                "llvm-vs-code-extensions.vscode-clangd",
+                "xaver.clang-format"
+            ],
+            "settings": {
+                "C_Cpp.intelliSenseEngine": "disabled"
+            }
+        }
+    },
+    // Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
+    "remoteUser": "ihnfsa",
+    "workspaceMount": "source=${localWorkspaceFolder},target=/home/ihnfsa/develop/lingo-db,type=bind", // change workspace folder
+    "workspaceFolder": "/home/ihnfsa/develop/lingo-db", // change workspace folder
+    "mounts": [
+        // "source=/local/source/path/goes/here,target=/target/path/in/container/goes/here,type=bind,consistency=cached"
+    ]
+}

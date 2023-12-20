@@ -34,6 +34,8 @@ execute_process(
         OUTPUT_VARIABLE TBB_INCLUDE_DIR
         OUTPUT_STRIP_TRAILING_WHITESPACE
 )
+set(TBB_LIB_PATH "${CMAKE_CURRENT_LIST_DIR}/oneapi-tbb/lib/intel64/gcc4.8")
+set(TBB_INCLUDE_DIR "${CMAKE_CURRENT_LIST_DIR}/oneapi-tbb/include")
 set(LLVM_BINARY_DIR "${MLIR_DIR}/../../../")
 message("arrow: ${ARROW_INCLUDE_DIR} ${ARROW_LIB_PATH}")
 message("tbb: ${TBB_LIB_PATH} ${TBB_INCLUDE_DIR} ")
@@ -50,6 +52,7 @@ endif (COMPILE_FOR_PERF)
 set (Clang_DIR "${MLIR_DIR}/../clang")
 message(STATUS "Using ClangConfig.cmake in: ${Clang_DIR}")
 
+list(APPEND CMAKE_PREFIX_PATH "${CMAKE_CURRENT_LIST_DIR}/llvm-project/build")
 find_package(Clang REQUIRED CONFIG)
 find_package(MLIR REQUIRED CONFIG)
 

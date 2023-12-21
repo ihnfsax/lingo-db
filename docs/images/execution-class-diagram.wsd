@@ -1,0 +1,84 @@
+@startuml LingoDB-Execution-Class-Diagram
+left to right direction
+
+' Entities
+abstract class QueryExecuter
+class DefaultQueryExecuter
+
+class QueryExecutionConfig
+class ExecutionContext
+
+abstract class Frontend
+class SQLFrontend
+
+abstract class QueryOptimizer
+class DefaultQueryOptimizer
+
+abstract class LoweringStep
+class RelAlgLoweringStep
+class SubOpLoweringStep
+class DefaultImperativeLowering
+
+abstract class ExecutionBackend
+class DefaultCBackend
+class DefaultCPULLVMBackend
+class CPULLVMDebugBackend
+class CPULLVMProfilingBackend
+
+abstract class ResultProcessor
+class TableRetriever
+class TablePrinter
+class BatchedTablePrinter
+
+abstract class TimingProcessor
+class TimingPrinter
+
+class Session
+
+abstract class Catalog
+class LocalCatalog
+class DBCatalog
+class EmptyCatalog
+
+' MLIR Entities
+class mlir::ModuleOp
+class mlir::MLIRContext
+
+' Relationships
+QueryExecuter <|.l. DefaultQueryExecuter
+QueryExecuter "1" *-d- "1" QueryExecutionConfig
+QueryExecuter "1" *-r- "1" ExecutionContext
+QueryExecutionConfig "1" *-- "1" Frontend
+QueryExecutionConfig "1" *-- "1" QueryOptimizer
+QueryExecutionConfig "1" *-- "1" LoweringStep
+QueryExecutionConfig "1" *-- "1" ExecutionBackend
+QueryExecutionConfig "1" *-- "1" ResultProcessor
+QueryExecutionConfig "1" *-- "1" TimingProcessor
+
+ExecutionContext -r-> Session
+Session -r-> Catalog
+Catalog <|.. LocalCatalog
+Catalog <|.. DBCatalog
+Catalog <|.. EmptyCatalog
+
+Frontend <|.. SQLFrontend
+SQLFrontend "1" *-- "1" mlir::ModuleOp
+SQLFrontend "1" *-- "1" mlir::MLIRContext
+
+QueryOptimizer <|.. DefaultQueryOptimizer
+
+LoweringStep <|.. RelAlgLoweringStep
+LoweringStep <|.. SubOpLoweringStep
+LoweringStep <|.. DefaultImperativeLowering
+
+ExecutionBackend <|.. DefaultCBackend
+ExecutionBackend <|.. DefaultCPULLVMBackend
+ExecutionBackend <|.. CPULLVMDebugBackend
+ExecutionBackend <|.. CPULLVMProfilingBackend
+
+ResultProcessor <|.. TableRetriever
+ResultProcessor <|.. TablePrinter
+ResultProcessor <|.. BatchedTablePrinter
+
+TimingProcessor <|.. TimingPrinter
+@enduml

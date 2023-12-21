@@ -1,0 +1,48 @@
+@startuml LingoDB-Execution-Sequence-Diagram
+
+Main -> DefaultQueryExecuter: execute
+
+
+' Frontend
+group Step 1
+    DefaultQueryExecuter -> SQLFrontend: loadFromString(sql)
+    DefaultQueryExecuter -> SQLFrontend: getModule
+    SQLFrontend --> DefaultQueryExecuter: moduleOp
+end
+
+' Optimization
+group Step 2
+    DefaultQueryExecuter -> DefaultQueryOptimizer: optimize(moduleOp)
+    DefaultQueryOptimizer --> DefaultQueryExecuter: moduleOp
+end
+
+' Lowering
+group Step 3
+    DefaultQueryExecuter -> RelAlgLoweringStep: implement(moduleOp)
+    RelAlgLoweringStep --> DefaultQueryExecuter: moduleOp
+    DefaultQueryExecuter -> SubOpLoweringStep: implement(moduleOp)
+    SubOpLoweringStep --> DefaultQueryExecuter: moduleOp
+    DefaultQueryExecuter -> DefaultImperativeLowering: implement(moduleOp)
+    DefaultImperativeLowering --> DefaultQueryExecuter: moduleOp
+end
+
+participant "DefaultCBackend/\nDefaultCPULLVMBackend/\nCPULLVMDebugBackend/\nCPULLVMProfilingBackend" as ExecutionBackend
+group Step 4
+    DefaultQueryExecuter -> ExecutionBackend: execute(moduleOp, executionContext)
+    ExecutionBackend --> DefaultQueryExecuter: executionContext
+end
+
+participant "TableRetriever/\nTablePrinter/\nBatchedTablePrinter" as ResultProcessor
+group Step 5
+    DefaultQueryExecuter -> ResultProcessor: process(executionContext)
+    ResultProcessor --> DefaultQueryExecuter: executionContext
+end
+
+group Step 6
+    DefaultQueryExecuter -> TimingPrinter: process
+end
+
+
+DefaultQueryExecuter --> Main: execute finish
+
+@enduml

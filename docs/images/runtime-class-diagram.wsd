@@ -1,0 +1,42 @@
+@startuml LingoDB-Runtime-Class-Diagram
+left to right direction
+
+' Entities
+abstract class Catalog
+class LocalCatalog
+class DBCatelog
+
+
+abstract class Relation
+class LocalRelation
+class DBRelation
+
+abstract class Index
+
+class TableMetaData
+class arrow::Table
+class arrow::Schema
+class arrow::RecordBatch
+
+' Relationships
+Catalog <|.. LocalCatalog
+Catalog <|.. DBCatelog
+
+Relation <|.. LocalRelation
+Relation <|.. DBRelation
+
+LocalCatalog "1" *-- "*" LocalRelation
+DBCatelog "1" *-- "*" DBRelation
+
+LocalRelation "1" --> "1" TableMetaData
+DBRelation "1" --> "1" TableMetaData
+LocalRelation "1" --> "1" arrow::Table
+DBRelation "1" --> "1" arrow::Table
+LocalRelation "1" --> "1" arrow::Schema
+DBRelation "1" --> "1" arrow::Schema
+LocalRelation "1" --> "1" arrow::RecordBatch
+DBRelation "1" --> "1" arrow::RecordBatch
+
+DBRelation "1" --> "*" Index
+
+@enduml

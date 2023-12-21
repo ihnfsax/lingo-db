@@ -45,9 +45,10 @@ RUN dnf install -y g++ gdb lld cmake make llvm clang clang-tools-extra ninja-bui
 # Run this at last
 # use vscode as regular user if argument `username` is not set
 ARG username=vscode
-RUN useradd -ms /bin/zsh ${username} && usermod -aG wheel ${username} && mkdir -p /home/${username}/develop
+RUN useradd -ms /bin/zsh ${username} && usermod -aG wheel ${username}
 USER ${username}
-RUN cd ~ && git clone https://github.com/zsh-users/zsh-autosuggestions ~/.zsh/zsh-autosuggestions \
+RUN mkdir -p /home/${username}/develop && cd ~ \
+    && git clone https://github.com/zsh-users/zsh-autosuggestions ~/.zsh/zsh-autosuggestions \
     && git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ~/.zsh/zsh-syntax-highlighting \
     && git clone https://github.com/ihnfsax/linux_settings_public.git \
     && cp linux_settings_public/tool_settings/zsh/.zshrc ~/.zshrc \

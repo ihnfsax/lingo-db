@@ -23,3 +23,5 @@ operations.parquet
 mlir_venv
 venv
 oneapi-tbb
+symbolfile
+resources/sql/temp

@@ -44,8 +44,7 @@ def TableMetaDataAttr : RelAlg_Attr<"TableMetaData"> {
 def SortSpecificationAttr : RelAlg_Attr<"SortSpecification"> {
     let mnemonic = "sortspec";
     let parameters = (ins "mlir::tuples::ColumnRefAttr":$attr,"SortSpec":$sortSpec);
-        let hasCustomAssemblyFormat=1;
-
+    let hasCustomAssemblyFormat=1;
 }
 
 //===----------------------------------------------------------------------===//
@@ -56,7 +55,7 @@ def RelAlg_SortSpec_DESC  : I64EnumAttrCase<"desc", 0>;
 def RelAlg_SortSpec_ASC  : I64EnumAttrCase<"asc", 1>;
 
 def RelAlg_SortSpec : I64EnumAttr<"SortSpec", "sort order",
-        [RelAlg_SortSpec_DESC,RelAlg_SortSpec_ASC]> {
+        [RelAlg_SortSpec_DESC, RelAlg_SortSpec_ASC]> {
     let cppNamespace = "::mlir::relalg";
 }
 

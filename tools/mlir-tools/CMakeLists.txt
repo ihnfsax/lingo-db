@@ -30,3 +30,8 @@ target_link_directories( run-sql PUBLIC ${CMAKE_BINARY_DIR}/lib/execution/cranel
 add_executable(mlir-db-opt mlir-opt.cpp)
 target_link_libraries(mlir-db-opt PUBLIC ${LIBS} runner runtime utility mlir-support  PRIVATE arrow)
 set_target_properties(mlir-db-opt PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
+
+# mlir-db-lsp-server
+add_executable(mlir-db-lsp-server mlir-lsp-server.cpp)
+target_link_libraries(mlir-db-lsp-server PUBLIC ${LIBS} runner runtime utility mlir-support PRIVATE arrow)
+set_target_properties(mlir-db-lsp-server PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")

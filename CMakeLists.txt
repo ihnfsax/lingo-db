@@ -156,6 +156,7 @@ set(LIBS
         ${conversion_libs}
         ${translation_libs}
         MLIROptLib
+        MLIRLspServerLib
         MLIRRelAlg
         MLIRTupleStream
         MLIRSubOperator

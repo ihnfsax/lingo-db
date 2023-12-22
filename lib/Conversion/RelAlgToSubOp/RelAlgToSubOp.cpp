@@ -65,6 +65,7 @@ class BaseTableLowering : public OpConversionPattern<mlir::relalg::BaseTableOp> 
    public:
    using OpConversionPattern<mlir::relalg::BaseTableOp>::OpConversionPattern;
    LogicalResult matchAndRewrite(mlir::relalg::BaseTableOp baseTableOp, OpAdaptor adaptor, ConversionPatternRewriter& rewriter) const override {
+      std::cout << "[DEV_DEBUG] BaseTableLowering: relalg::BaseTableOp -> subop::GetExternalOp, subop::ScanOp" << std::endl;
       auto required = getRequired(baseTableOp);
       std::vector<mlir::Type> types;
       std::vector<Attribute> colNames;
@@ -235,6 +236,7 @@ class MapLowering : public OpConversionPattern<mlir::relalg::MapOp> {
    using OpConversionPattern<mlir::relalg::MapOp>::OpConversionPattern;
 
    LogicalResult matchAndRewrite(mlir::relalg::MapOp mapOp, OpAdaptor adaptor, ConversionPatternRewriter& rewriter) const override {
+      std::cout << "[DEV_DEBUG] MapLowering: relalg::MapOp -> subop::MapOp" << std::endl;
       auto mapOp2 = rewriter.replaceOpWithNewOp<mlir::subop::MapOp>(mapOp, mlir::tuples::TupleStreamType::get(rewriter.getContext()), adaptor.getRel(), mapOp.getComputedCols());
       auto moved = safelyMoveRegion(rewriter, mapOp.getPredicate(), mapOp2.getFn()).succeeded();
       return success(moved);
@@ -1551,6 +1553,7 @@ class MaterializeLowering : public OpConversionPattern<mlir::relalg::Materialize
    using OpConversionPattern<mlir::relalg::MaterializeOp>::OpConversionPattern;
 
    LogicalResult matchAndRewrite(mlir::relalg::MaterializeOp materializeOp, OpAdaptor adaptor, ConversionPatternRewriter& rewriter) const override {
+      std::cout << "[DEV_DEBUG] MaterializeLowering: relalg::MaterializeOp -> subop::CreateResultTableOp, subop::MaterializeOp" << std::endl;
       auto resultTableType = materializeOp.getResult().getType().cast<mlir::subop::ResultTableType>();
       std::vector<Attribute> colNames;
       std::vector<NamedAttribute> mapping;
@@ -2364,6 +2367,7 @@ class AggregationLowering : public OpConversionPattern<mlir::relalg::Aggregation
    }
 
    LogicalResult matchAndRewrite(mlir::relalg::AggregationOp aggregationOp, OpAdaptor adaptor, ConversionPatternRewriter& rewriter) const override {
+      std::cout << "[DEV_DEBUG] AggregationLowering: relalg::AggregationOp -> relalg::ProjectionOp, subop::ScanOp, subop::LookupOp, subop::GatherOp" << std::endl;
       AnalyzedAggregation analyzedAggregation;
       analyze(aggregationOp, analyzedAggregation);
       auto keyAttributes = mlir::relalg::OrderedAttributes::fromRefArr(aggregationOp.getGroupByColsAttr());

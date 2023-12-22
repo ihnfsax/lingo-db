@@ -21,7 +21,8 @@ ENV HTTPS_PROXY ${https_proxy}
 
 RUN dnf upgrade -y --refresh && dnf group install -y "Development Tools" \
     && dnf install -y vim git man-pages man-db zsh wget passwd iproute \
-    python3-pip python glibc-locale-source glibc-langpack-en bzip2 procps
+    python3-pip python3-devel python glibc-locale-source glibc-langpack-en bzip2 \
+    procps hostname
 
 # timezone
 ENV TZ=Asia/Chongqing
@@ -37,10 +38,16 @@ RUN git config --global user.name "ihnfsax" \
     && git config --global https.proxy ${https_proxy}
 
 # C++
-RUN dnf install -y g++ gdb lld cmake make llvm clang clang-tools-extra ninja-build \
-    ccache automake libstdc++-static bison bison-devel flex libtool ncurses-devel \
-    binutils-devel byacc perl
+RUN dnf install -y libstdc++-static glibc-static g++ gdb lld cmake make llvm \
+    clang clang-tools-extra ninja-build libtool ccache automake bison bison-devel \
+    flex ncurses-devel binutils-devel byacc perl
 
+# Lingo-DB debug
+RUN dnf debuginfo-install bzip2-libs-1.0.8-16.fc39.x86_64 glibc-2.38-14.fc39.x86_64 \
+    libarrow-13.0.0-2.fc39.x86_64 libbrotli-1.1.0-1.fc39.x86_64 libgcc-13.2.1-6.fc39.x86_64 \
+    liborc1-1.9.1-1.fc39.x86_64 libstdc++-13.2.1-6.fc39.x86_64 libzstd-1.5.5-4.fc39.x86_64 \
+    lz4-libs-1.9.4-4.fc39.x86_64 protobuf-3.19.6-6.fc39.x86_64 re2-20220601-3.fc39.x86_64 \
+    snappy-1.1.10-2.fc39.x86_64 utf8proc-2.7.0-5.fc39.x86_64 zlib-1.2.13-4.fc39.x86_64
 
 # Run this at last
 # use vscode as regular user if argument `username` is not set

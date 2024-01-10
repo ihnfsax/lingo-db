@@ -220,6 +220,7 @@ class SelectionLowering : public OpConversionPattern<mlir::relalg::SelectionOp> 
    using OpConversionPattern<mlir::relalg::SelectionOp>::OpConversionPattern;
 
    LogicalResult matchAndRewrite(mlir::relalg::SelectionOp selectionOp, OpAdaptor adaptor, ConversionPatternRewriter& rewriter) const override {
+      std::cout << "[DEV_DEBUG] SelectionLowering: relalg::SelectionOp -> subop::MapOp, subop::FilterOp" << std::endl;
       auto repl = translateSelection(adaptor.getRel(), selectionOp.getPredicate(), rewriter, selectionOp->getLoc());
       if (auto* definingOp = repl.getDefiningOp()) {
          if (selectionOp->hasAttr("selectivity")) {
@@ -842,6 +843,7 @@ static std::pair<mlir::Value, std::string> createCounterState(mlir::OpBuilder& r
 }
 
 static mlir::Value translateNLJ(mlir::Value left, mlir::Value right, mlir::relalg::ColumnSet columns, mlir::ConversionPatternRewriter& rewriter, mlir::Location loc, std::function<mlir::Value(mlir::Value, mlir::ConversionPatternRewriter& rewriter)> fn) {
+   std::cout << "[DEV_DEBUG] translateNLJ: subop::GenericCreateOp, subop::MaterializeOp, subop::NestedMapOp, subop::ScanOp, subop::CombineTupleOp" << std::endl;
    MaterializationHelper helper(columns, rewriter.getContext());
    auto vectorType = mlir::subop::BufferType::get(rewriter.getContext(), helper.createStateMembersAttr());
    mlir::Value vector = rewriter.create<mlir::subop::GenericCreateOp>(loc, vectorType);
@@ -917,6 +919,7 @@ mlir::Block* createVerifyEqFnForTuple(mlir::ConversionPatternRewriter& rewriter,
 }
 
 static mlir::Value translateHJ(mlir::Value left, mlir::Value right, mlir::ArrayAttr nullsEqual, mlir::ArrayAttr hashLeft, mlir::ArrayAttr hashRight, mlir::relalg::ColumnSet columns, mlir::ConversionPatternRewriter& rewriter, mlir::Location loc, std::function<mlir::Value(mlir::Value, mlir::ConversionPatternRewriter& rewriter)> fn) {
+   std::cout << "[DEV_DEBUG] translateHJ: subop::GenericCreateOp, subop::InsertOp, subop::LookupOp, subop::NestedMapOp, subop::ScanListOp, subop::GatherOp, subop::CombineTupleOp" << std::endl;
    auto keyColumns = mlir::relalg::ColumnSet::fromArrayAttr(hashRight);
    MaterializationHelper keyHelper(hashRight, rewriter.getContext());
    auto valueColumns = columns;
@@ -950,6 +953,7 @@ static mlir::Value translateHJ(mlir::Value left, mlir::Value right, mlir::ArrayA
    return nestedMapOp.getRes();
 }
 static mlir::Value translateINLJ(mlir::Value left, mlir::Value right, mlir::ArrayAttr nullsEqual, mlir::ArrayAttr hashLeft, mlir::ArrayAttr hashRight, mlir::relalg::ColumnSet columns, mlir::ConversionPatternRewriter& rewriter, mlir::Location loc, std::function<mlir::Value(mlir::Value, mlir::ConversionPatternRewriter& rewriter)> fn) {
+   std::cout << "[DEV_DEBUG] translateINLJ: subop::GetExternalOp, subop::LookupOp, subop::NestedMapOp, subop::ScanListOp, subop::GatherOp, subop::CombineTupleOp, subop::MapOp, subop::FilterOp" << std::endl;
    auto rightScan = mlir::cast<mlir::subop::ScanOp>(right.getDefiningOp());
    auto* ctxt = rewriter.getContext();
    auto& colManager = rewriter.getContext()->getLoadedDialect<mlir::tuples::TupleStreamDialect>()->getColumnManager();
@@ -1132,6 +1136,7 @@ class CrossProductLowering : public OpConversionPattern<mlir::relalg::CrossProdu
    using OpConversionPattern<mlir::relalg::CrossProductOp>::OpConversionPattern;
 
    LogicalResult matchAndRewrite(mlir::relalg::CrossProductOp crossProductOp, OpAdaptor adaptor, ConversionPatternRewriter& rewriter) const override {
+      std::cout << "[DEV_DEBUG] CrossProductLowering: relalg::CrossProductOp ->" << std::endl;
       auto loc = crossProductOp->getLoc();
       rewriter.replaceOp(crossProductOp, translateNL(adaptor.getRight(), adaptor.getLeft(), false, false, mlir::ArrayAttr(), mlir::ArrayAttr(), mlir::ArrayAttr(), getRequired(mlir::cast<Operator>(crossProductOp.getLeft().getDefiningOp())), rewriter, loc, [](mlir::Value v, mlir::ConversionPatternRewriter& rewriter) -> mlir::Value {
                             return v;
@@ -1144,6 +1149,7 @@ class InnerJoinNLLowering : public OpConversionPattern<mlir::relalg::InnerJoinOp
    using OpConversionPattern<mlir::relalg::InnerJoinOp>::OpConversionPattern;
 
    LogicalResult matchAndRewrite(mlir::relalg::InnerJoinOp innerJoinOp, OpAdaptor adaptor, ConversionPatternRewriter& rewriter) const override {
+      std::cout << "[DEV_DEBUG] InnerJoinNLLowering: relalg::InnerJoinOp ->" << std::endl;
       auto loc = innerJoinOp->getLoc();
       bool useHash = innerJoinOp->hasAttr("useHashJoin");
       bool useIndexNestedLoop = innerJoinOp->hasAttr("useIndexNestedLoop");
@@ -1392,6 +1398,7 @@ class LimitLowering : public OpConversionPattern<mlir::relalg::LimitOp> {
    using OpConversionPattern<mlir::relalg::LimitOp>::OpConversionPattern;
 
    LogicalResult matchAndRewrite(mlir::relalg::LimitOp limitOp, OpAdaptor adaptor, ConversionPatternRewriter& rewriter) const override {
+      std::cout << "[DEV_DEBUG] LimitLowering: relalg::LimitOp -> subop::CreateHeapOp, subop::MaterializeOp, subop::ScanOp" << std::endl;
       auto loc = limitOp->getLoc();
       mlir::relalg::ColumnSet requiredColumns = getRequired(limitOp);
       MaterializationHelper helper(requiredColumns, rewriter.getContext());
@@ -1468,6 +1475,7 @@ class SortLowering : public OpConversionPattern<mlir::relalg::SortOp> {
    using OpConversionPattern<mlir::relalg::SortOp>::OpConversionPattern;
 
    LogicalResult matchAndRewrite(mlir::relalg::SortOp sortOp, OpAdaptor adaptor, ConversionPatternRewriter& rewriter) const override {
+      std::cout << "[DEV_DEBUG] SortLowering: relalg::SortOp -> subop::GenericCreateOp, subop::MaterializeOp, subop::CreateSortedViewOp, subop::ScanOp" << std::endl;
       auto loc = sortOp->getLoc();
       mlir::relalg::ColumnSet requiredColumns = getRequired(sortOp);
       requiredColumns.insert(sortOp.getUsedColumns());
@@ -2367,7 +2375,7 @@ class AggregationLowering : public OpConversionPattern<mlir::relalg::Aggregation
    }
 
    LogicalResult matchAndRewrite(mlir::relalg::AggregationOp aggregationOp, OpAdaptor adaptor, ConversionPatternRewriter& rewriter) const override {
-      std::cout << "[DEV_DEBUG] AggregationLowering: relalg::AggregationOp -> relalg::ProjectionOp, subop::ScanOp, subop::LookupOp, subop::GatherOp" << std::endl;
+      std::cout << "[DEV_DEBUG] AggregationLowering: relalg::AggregationOp -> subop::CreateSimpleStateOp, subop::LookupOp, subop::ReduceOp, relalg::ProjectionOp, subop::ScanOp, subop::LookupOp, subop::GatherOp" << std::endl;
       AnalyzedAggregation analyzedAggregation;
       analyze(aggregationOp, analyzedAggregation);
       auto keyAttributes = mlir::relalg::OrderedAttributes::fromRefArr(aggregationOp.getGroupByColsAttr());

@@ -532,6 +532,8 @@ mlir::Value frontend::sql::Parser::translateRangeVar(mlir::OpBuilder& builder, R
    char lastCharacter = alias.back();
    std::string scopeName = attrManager.getUniqueScope(alias + (isdigit(lastCharacter) ? "_" : ""));
 
+   std::cout << "[DEV_DEBUG] scopeName: " << scopeName << std::endl;
+
    std::vector<mlir::NamedAttribute> columns;
    for (auto c : tableMetaData->getOrderedColumns()) {
       auto attrDef = attrManager.createDef(scopeName, c);

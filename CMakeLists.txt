@@ -119,11 +119,11 @@ gen_rt_def(hmm-rt-defs "HashMultiMap.h")
 gen_rt_def(tls-rt-defs "ThreadLocal.h")
 gen_rt_def(st-rt-defs "SimpleState.h")
 gen_rt_def(paht-rt-defs "PreAggregationHashtable.h")
-message("cpp files ${runtime_funcs_ptr_libs}")
+message(STATUS "Generated C++ files:${runtime_funcs_ptr_libs}")
 string (REPLACE " " ";" runtime_funcs_ptr_libs "${runtime_funcs_ptr_libs}")
 
 add_library(runtime_funcs_ptr ${runtime_funcs_ptr_libs})
-add_dependencies(runtime_funcs_ptr build_includes)
+add_dependencies(runtime_funcs_ptr build_includes) # build runtime_funcs_ptr after build_includes
 add_subdirectory(lib/mlir-support)
 if(ENABLE_CRANELIFT_BACKEND)
 add_subdirectory(lib/execution/cranelift)

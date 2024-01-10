@@ -1,0 +1,96 @@
+{
+  "columns": [
+    {
+      "distinct_values": 20000,
+      "name": "p_partkey",
+      "type": {
+        "base": "int",
+        "nullable": false,
+        "props": [
+          32
+        ]
+      }
+    },
+    {
+      "distinct_values": 20000,
+      "name": "p_name",
+      "type": {
+        "base": "string",
+        "nullable": false,
+        "props": []
+      }
+    },
+    {
+      "distinct_values": 5,
+      "name": "p_mfgr",
+      "type": {
+        "base": "string",
+        "nullable": false,
+        "props": []
+      }
+    },
+    {
+      "distinct_values": 25,
+      "name": "p_brand",
+      "type": {
+        "base": "string",
+        "nullable": false,
+        "props": []
+      }
+    },
+    {
+      "distinct_values": 150,
+      "name": "p_type",
+      "type": {
+        "base": "string",
+        "nullable": false,
+        "props": []
+      }
+    },
+    {
+      "distinct_values": 50,
+      "name": "p_size",
+      "type": {
+        "base": "int",
+        "nullable": false,
+        "props": [
+          32
+        ]
+      }
+    },
+    {
+      "distinct_values": 40,
+      "name": "p_container",
+      "type": {
+        "base": "string",
+        "nullable": false,
+        "props": []
+      }
+    },
+    {
+      "distinct_values": 2899,
+      "name": "p_retailprice",
+      "type": {
+        "base": "decimal",
+        "nullable": false,
+        "props": [
+          15,
+          2
+        ]
+      }
+    },
+    {
+      "distinct_values": 17482,
+      "name": "p_comment",
+      "type": {
+        "base": "string",
+        "nullable": false,
+        "props": []
+      }
+    }
+  ],
+  "num_rows": 20000,
+  "pkey": [
+    "p_partkey"
+  ]
+}

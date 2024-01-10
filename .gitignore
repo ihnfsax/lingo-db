@@ -25,3 +25,5 @@ venv
 oneapi-tbb
 symbolfile
 resources/sql/temp
+/*.mlir
+.cache

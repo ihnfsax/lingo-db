@@ -1,0 +1,48 @@
+{
+  "columns": [
+    {
+      "distinct_values": 25,
+      "name": "n_nationkey",
+      "type": {
+        "base": "int",
+        "nullable": false,
+        "props": [
+          32
+        ]
+      }
+    },
+    {
+      "distinct_values": 25,
+      "name": "n_name",
+      "type": {
+        "base": "string",
+        "nullable": false,
+        "props": []
+      }
+    },
+    {
+      "distinct_values": 5,
+      "name": "n_regionkey",
+      "type": {
+        "base": "int",
+        "nullable": false,
+        "props": [
+          32
+        ]
+      }
+    },
+    {
+      "distinct_values": 25,
+      "name": "n_comment",
+      "type": {
+        "base": "string",
+        "nullable": true,
+        "props": []
+      }
+    }
+  ],
+  "num_rows": 25,
+  "pkey": [
+    "n_nationkey"
+  ]
+}

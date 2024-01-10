@@ -1,0 +1,78 @@
+{
+  "columns": [
+    {
+      "distinct_values": 1000,
+      "name": "s_suppkey",
+      "type": {
+        "base": "int",
+        "nullable": false,
+        "props": [
+          32
+        ]
+      }
+    },
+    {
+      "distinct_values": 1000,
+      "name": "s_name",
+      "type": {
+        "base": "string",
+        "nullable": false,
+        "props": []
+      }
+    },
+    {
+      "distinct_values": 1000,
+      "name": "s_address",
+      "type": {
+        "base": "string",
+        "nullable": false,
+        "props": []
+      }
+    },
+    {
+      "distinct_values": 25,
+      "name": "s_nationkey",
+      "type": {
+        "base": "int",
+        "nullable": false,
+        "props": [
+          32
+        ]
+      }
+    },
+    {
+      "distinct_values": 1000,
+      "name": "s_phone",
+      "type": {
+        "base": "string",
+        "nullable": false,
+        "props": []
+      }
+    },
+    {
+      "distinct_values": 999,
+      "name": "s_acctbal",
+      "type": {
+        "base": "decimal",
+        "nullable": false,
+        "props": [
+          15,
+          2
+        ]
+      }
+    },
+    {
+      "distinct_values": 1000,
+      "name": "s_comment",
+      "type": {
+        "base": "string",
+        "nullable": false,
+        "props": []
+      }
+    }
+  ],
+  "num_rows": 1000,
+  "pkey": [
+    "s_suppkey"
+  ]
+}

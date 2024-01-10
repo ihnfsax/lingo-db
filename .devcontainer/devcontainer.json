@@ -22,7 +22,9 @@
             "extensions": [
                 "ms-vscode.cpptools-extension-pack",
                 "llvm-vs-code-extensions.vscode-clangd",
-                "xaver.clang-format"
+                "xaver.clang-format",
+                "llvm-vs-code-extensions.vscode-mlir",
+                "jebbs.plantuml"
             ],
             "settings": {
                 "C_Cpp.intelliSenseEngine": "disabled"

@@ -1,0 +1,87 @@
+{
+  "columns": [
+    {
+      "distinct_values": 15000,
+      "name": "c_custkey",
+      "type": {
+        "base": "int",
+        "nullable": false,
+        "props": [
+          32
+        ]
+      }
+    },
+    {
+      "distinct_values": 15000,
+      "name": "c_name",
+      "type": {
+        "base": "string",
+        "nullable": false,
+        "props": []
+      }
+    },
+    {
+      "distinct_values": 15000,
+      "name": "c_address",
+      "type": {
+        "base": "string",
+        "nullable": false,
+        "props": []
+      }
+    },
+    {
+      "distinct_values": 25,
+      "name": "c_nationkey",
+      "type": {
+        "base": "int",
+        "nullable": false,
+        "props": [
+          32
+        ]
+      }
+    },
+    {
+      "distinct_values": 15000,
+      "name": "c_phone",
+      "type": {
+        "base": "string",
+        "nullable": false,
+        "props": []
+      }
+    },
+    {
+      "distinct_values": 14887,
+      "name": "c_acctbal",
+      "type": {
+        "base": "decimal",
+        "nullable": false,
+        "props": [
+          15,
+          2
+        ]
+      }
+    },
+    {
+      "distinct_values": 5,
+      "name": "c_mktsegment",
+      "type": {
+        "base": "string",
+        "nullable": false,
+        "props": []
+      }
+    },
+    {
+      "distinct_values": 15000,
+      "name": "c_comment",
+      "type": {
+        "base": "string",
+        "nullable": false,
+        "props": []
+      }
+    }
+  ],
+  "num_rows": 15000,
+  "pkey": [
+    "c_custkey"
+  ]
+}

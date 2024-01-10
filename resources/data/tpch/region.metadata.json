@@ -1,0 +1,37 @@
+{
+  "columns": [
+    {
+      "distinct_values": 5,
+      "name": "r_regionkey",
+      "type": {
+        "base": "int",
+        "nullable": false,
+        "props": [
+          32
+        ]
+      }
+    },
+    {
+      "distinct_values": 5,
+      "name": "r_name",
+      "type": {
+        "base": "string",
+        "nullable": false,
+        "props": []
+      }
+    },
+    {
+      "distinct_values": 5,
+      "name": "r_comment",
+      "type": {
+        "base": "string",
+        "nullable": true,
+        "props": []
+      }
+    }
+  ],
+  "num_rows": 5,
+  "pkey": [
+    "r_regionkey"
+  ]
+}

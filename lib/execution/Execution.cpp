@@ -271,6 +271,7 @@ class DefaultQueryExecuter : public QueryExecuter {
          loweringStep.implement(moduleOp);
          handleError("LOWERING", loweringStep.getError());
          handleTiming(loweringStep.getTiming());
+         std::cout << "[DEV_DEBUG] snapshot count = " << snapShotCounter << std::endl;
          performSnapShot(moduleOp);
       }
 

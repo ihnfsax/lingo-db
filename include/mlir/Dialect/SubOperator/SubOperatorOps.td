@@ -479,23 +479,25 @@ def RenamingOp : SubOperator_Op<"rename", [Pure,SubOperator]> {
 }
 
 def NestedMapOp : SubOperator_Op<"nested_map",[SubOperator,DeclareOpInterfaceMethods<StateUsingSubOperator>]> {
-   let summary = "compute nested map";
-  let description = [{#
-     Example:
-     ```mlir
-     %stream2 = subop.nested_map %stream [@x::@a, @y::@b] (%a, %b){
-        %stream3 = subop.scan %some_table ...
-        %stream4 = subop.filter ... {
-            ... %a
-            ... %b
-            tuples.return %pred
+    let summary = "compute nested map";
+    let description = [{#
+        Example:
+        ```mlir
+        %stream2 = subop.nested_map %stream [@x::@a, @y::@b] (%a, %b){
+            %stream3 = subop.scan %some_table ...
+            %stream4 = subop.filter ... {
+                ... %a
+                ... %b
+                tuples.return %pred
+            }
+            tuples.return %stream5
         }
-        tuples.return %stream5
-     }
-     ```
-    Semantics of the produced stream: each tuple is combined with the tuples returned by the nested_map
-    If no tuple is returned -> the original tuple is ommited (-> "inner-join semantic")
-  }];
+        ```
+        Semantics of the produced stream: each tuple is combined with the tuples returned by the nested_map
+        If no tuple is returned -> the original tuple is ommited (-> "inner-join semantic")
+    }];
+    // 变参:
+    // $stream: 数据源
     let arguments= (ins TupleStream : $stream, ArrayAttr: $parameters);
     let results = (outs TupleStream : $res);
     let regions = (region SizedRegion<1>:$region);
@@ -614,35 +616,64 @@ def MaterializeOp : SubOperator_Op<"materialize",[SubOperator,DeclareOpInterface
 
 def LookupOrInsertOp : SubOperator_Op<"lookup_or_insert",[SubOperator,ReferenceProducer,DeclareOpInterfaceMethods<StateUsingSubOperator>]> {
     let summary = "performs a lookup in a state and annotates the result as attribute ";
+    // 变参：
+    // $stream: 数据源，查找的 Key 从 tuple 中获取
+    // $state: 数据结构，可以是 map
+    // 属性：
+    // $keys: 指示数据源哪一列作为 key
+    // $ref: 对 $res 中一列的引用，该列类型是 !subop.lookup_entry_ref<!subop.map<...>>，表明它是 map 表项的引用
     let arguments = (ins TupleStream: $stream, AnyType: $state, ArrayAttr: $keys,ColumnDefAttr:$ref);
     let results = (outs TupleStream: $res);
+    // $eqFn 用来判断哈希冲突时，查找key和现有key是否真正相同
+    // $initFn 用来初始化新插入的 value
     let regions = (region AnyRegion:$eqFn, AnyRegion:$initFn);
-      let hasCustomAssemblyFormat = 1;
-      let extraClassDeclaration = [{
-          std::vector<std::string> getWrittenMembers();
-          mlir::tuples::ColumnDefAttr getProducedReference(){ return getRef(); }
-      }];
+    let hasCustomAssemblyFormat = 1;
+    let extraClassDeclaration = [{
+        std::vector<std::string> getWrittenMembers();
+        mlir::tuples::ColumnDefAttr getProducedReference(){ return getRef(); }
+    }];
 }
+
 def InsertOp : SubOperator_Op<"insert",[SubOperator,DeclareOpInterfaceMethods<StateUsingSubOperator>,DeclareOpInterfaceMethods<ColumnFoldable>]> {
     let summary = "performs a lookup in a state and annotates the result as attribute ";
+    // 变参：
+    // $stream: 用于插入的数据源
+    // $state: 插入目标，可以 multimap, hashmultimap 等
+    // 属性:
+    // $mapping: 指示数据源哪一列和目标的哪一列映射
+    // 说明：
+    // 虽然 insert 操纵的对象是 multimap，但实际想实现的功能是 hashmap，$eqFn 就是实现
+    // hashmap 的关键，它指示了如何比较两个元素是否相等. 当两个值插入时放到相同哈希桶后，还会
+    // 使用 $eqFn 来进一步比较它们是否相同，如果相同，则覆盖现有值，不相同则挂到哈希桶链表上
     let arguments = (ins TupleStream: $stream, LookupAbleState: $state, DictionaryAttr : $mapping);
     let regions = (region AnyRegion:$eqFn);
-      let hasCustomAssemblyFormat = 1;
-      let extraClassDeclaration = [{
-          std::vector<std::string> getWrittenMembers();
-      }];
+    let hasCustomAssemblyFormat = 1;
+    let extraClassDeclaration = [{
+        std::vector<std::string> getWrittenMembers();
+    }];
 }
 
 def LookupOp : SubOperator_Op<"lookup",[SubOperator,DeclareOpInterfaceMethods<StateUsingSubOperator>,ReferenceProducer]> {
     let summary = "performs a lookup in a state and annotates the result as attribute ";
-    let arguments = (ins TupleStream: $stream, AnyType: $state, ArrayAttr: $keys,ColumnDefAttr:$ref);
+    // lookup 操作拿一个元组流中的某一列的值作为 key，去查找 state 中的匹配的结果。
+    // 变参：
+    // $stream: 数据源，用于查找的key从数据源中获取
+    // $state: 查找目标，可以是 multimap, hashmap 等
+    // 输出：
+    // $res: 查找结果组成的元组流
+    // 属性：
+    // $keys: 指示数据源哪一列作为 key
+    // $ref: 对 $res 中一列的引用，该列类型是 !subop.list<!subop.multi_map_entry_ref>，表明它是 multimap 表项引用组成的 list
+    // 其他：
+    // $eqFn: 指示当查找 Key 查找出多个KV对后，如何进一步判断哪个相同
+    let arguments = (ins TupleStream: $stream, AnyType: $state, ArrayAttr: $keys, ColumnDefAttr:$ref);
     let results = (outs TupleStream: $res);
     let regions = (region AnyRegion:$eqFn, AnyRegion:$initFn);
-      let hasCustomAssemblyFormat = 1;
-      let extraClassDeclaration = [{
-          std::vector<std::string> getReadMembers();
-          mlir::tuples::ColumnDefAttr getProducedReference(){ return getRef(); }
-      }];
+    let hasCustomAssemblyFormat = 1;
+    let extraClassDeclaration = [{
+        std::vector<std::string> getReadMembers();
+        mlir::tuples::ColumnDefAttr getProducedReference(){ return getRef(); }
+    }];
 }
 def GetBeginReferenceOp : SubOperator_Op<"get_begin_ref",[SubOperator]> {
     let arguments = (ins TupleStream : $stream, AnyType : $state, ColumnDefAttr:$ref);
@@ -699,23 +730,29 @@ def ScatterOp : SubOperator_Op<"scatter",[SubOperator,DeclareOpInterfaceMethods<
 }
 
 def ReduceOp : SubOperator_Op<"reduce",[SubOperator,DeclareOpInterfaceMethods<StateUsingSubOperator>]> {
-  let summary = "reduce";
-  let description =[{
-  ```mlir
-    %5 = subop.reduce %2 %0 [@studenten::@semester] with ["ctr","sum"] ([%v1], [%curr_ctr, %curr_sum]){
-      %c1 = db.constant %c1
-      %updated_ctr = db.add %curr_ctr, %c1
-      tuples.return %updated_ctr, %updated_sum
-    } eq: (){} combine: (){} initial: (){}
-  ```
-  }];
-  let regions = (region SizedRegion<1>:$region,AnyRegion:$combine);
-  let arguments = (ins TupleStream: $stream, ColumnRefAttr: $ref, ArrayAttr: $columns, ArrayAttr: $members);
-  let hasCustomAssemblyFormat = 1;
-        let extraClassDeclaration = [{
-            std::vector<std::string> getWrittenMembers();
-            std::vector<std::string> getReadMembers();
-        }];
+    let summary = "reduce";
+    let description =[{
+    ```mlir
+        %5 = subop.reduce %2 %0 [@studenten::@semester] with ["ctr","sum"] ([%v1], [%curr_ctr, %curr_sum]){
+        %c1 = db.constant %c1
+        %updated_ctr = db.add %curr_ctr, %c1
+        tuples.return %updated_ctr, %updated_sum
+        } eq: (){} combine: (){} initial: (){}
+    ```
+    }];
+    // 变参:
+    // $stream: 数据源
+    // 属性：
+    // $columns：需要聚合的列
+    // $ref：map 表项引用的那一列
+    let arguments = (ins TupleStream: $stream, ColumnRefAttr: $ref, ArrayAttr: $columns, ArrayAttr: $members);
+    // reduce 这两个 region 作用还不是很清楚
+    let regions = (region SizedRegion<1>:$region, AnyRegion:$combine);
+    let hasCustomAssemblyFormat = 1;
+    let extraClassDeclaration = [{
+        std::vector<std::string> getWrittenMembers();
+        std::vector<std::string> getReadMembers();
+    }];
 }
 
 //===----------------------------------------------------------------------===//

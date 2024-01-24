@@ -2902,13 +2902,18 @@ class InsertMultiMapLowering : public SubOpTupleStreamConsumerConversionPattern<
    public:
    using SubOpTupleStreamConsumerConversionPattern<mlir::subop::InsertOp>::SubOpTupleStreamConsumerConversionPattern;
    LogicalResult matchAndRewrite(mlir::subop::InsertOp insertOp, OpAdaptor adaptor, SubOpRewriter& rewriter, ColumnMapping& mapping) const override {
+      // 获取第2个参数，不知道为什么是 HashMultiMap，而不是 MultiMap
       mlir::subop::HashMultiMapType htStateType = insertOp.getState().getType().dyn_cast_or_null<mlir::subop::HashMultiMapType>();
       if (!htStateType) return failure();
+
+      // 获取类型的属性参数
       EntryStorageHelper keyStorageHelper(htStateType.getKeyMembers(), typeConverter);
       EntryStorageHelper valStorageHelper(htStateType.getValueMembers(), typeConverter);
+
       auto loc = insertOp->getLoc();
+      // 拿到 mapping 属性
       std::vector<mlir::Value> lookupKey = keyStorageHelper.resolve(insertOp.getMapping(), mapping);
-      auto packed = rewriter.create<mlir::util::PackOp>(loc, lookupKey);
+      auto packed = rewriter.create<mlir::util::PackOp>(loc, lookupKey); // 打包成 tuple
 
       mlir::Value hash = rewriter.create<mlir::db::Hash>(loc, packed); //todo: external hash
       mlir::Value hashTable = adaptor.getState();
@@ -2978,7 +2983,8 @@ class InsertMultiMapLowering : public SubOpTupleStreamConsumerConversionPattern<
                            valRef=rewriter.create<util::GenericMemrefCastOp>(loc, mlir::util::RefType::get(getContext(),mlir::TupleType::get(getContext(),{i8PtrType,valStorageHelper.getStorageType()})),valRef);
                            valRef=rewriter.create<util::TupleElementPtrOp>(loc, valStorageHelper.getRefType(), valRef, 1);
                            valStorageHelper.storeFromColumns(insertOp.getMapping(),mapping,valRef,rewriter,loc);
-                           b.create<scf::YieldOp>(loc, ValueRange{falseValue, ptr}); }, [&](OpBuilder& b, Location loc) {
+                           b.create<scf::YieldOp>(loc, ValueRange{falseValue, ptr}); },
+                        [&](OpBuilder& b, Location loc) {
                            Value nextPtrAddr=rewriter.create<util::TupleElementPtrOp>(loc, i8PtrPtrType, currEntryPtr, 0);
                            //          ptr = &entry.next
                            Value newEntryPtr=b.create<util::LoadOp>(loc,nextPtrAddr,mlir::Value());
@@ -2993,7 +2999,8 @@ class InsertMultiMapLowering : public SubOpTupleStreamConsumerConversionPattern<
                      Value newEntryPtr=b.create<util::LoadOp>(loc,nextPtrAddr,mlir::Value());
                      Value newPtr=b.create<util::GenericMemrefCastOp>(loc, bucketPtrType,newEntryPtr);
                      //          yield ptr,done=false
-                     b.create<scf::YieldOp>(loc, ValueRange{trueValue, newPtr });});
+                     b.create<scf::YieldOp>(loc, ValueRange{trueValue, newPtr });
+                  });
                b.create<scf::YieldOp>(loc, ifOpH.getResults()); }, [&](OpBuilder& b, Location loc) {
                Value entryRef=rt::HashMultiMap::insertEntry(b,loc)({hashTable,hashed})[0];
                Value entryRefCasted= rewriter.create<util::GenericMemrefCastOp>(loc, bucketPtrType, entryRef);
@@ -3077,20 +3084,27 @@ class LookupPreAggrHtFragment : public SubOpTupleStreamConsumerConversionPattern
       Value cmp = rewriter.create<util::IsRefValidOp>(loc, rewriter.getI1Type(), currEntryPtr);
       auto ifOp = rewriter.create<scf::IfOp>(
          loc, cmp, [&](OpBuilder& b, Location loc) {
-               Value hashAddress=rewriter.create<util::TupleElementPtrOp>(loc, idxPtrType, currEntryPtr, 1);
-               Value entryHash = rewriter.create<util::LoadOp>(loc, idxType, hashAddress);
-               Value hashMatches = b.create<arith::CmpIOp>(loc, arith::CmpIPredicate::eq, entryHash,hashed);
-               auto ifOpH = b.create<scf::IfOp>(
-                  loc, hashMatches, [&](OpBuilder& b, Location loc) {
-                     Value kvAddress = rewriter.create<util::TupleElementPtrOp>(loc, kvPtrType, currEntryPtr, 2);
-                     Value keyRef = rewriter.create<util::TupleElementPtrOp>(loc, keyPtrType, kvAddress, 0);
-                     auto keyValues=keyStorageHelper.loadValuesOrdered(keyRef,rewriter,loc);
-                     Value keyMatches = equalFnBuilder(b, keyValues, lookupKey);
-                     b.create<scf::YieldOp>(loc, mlir::ValueRange{keyMatches});
-                  }, [&](OpBuilder& b, Location loc) {  b.create<scf::YieldOp>(loc, falseValue);});
-               b.create<scf::YieldOp>(loc, ifOpH.getResults()); }, [&](OpBuilder& b, Location loc) { b.create<scf::YieldOp>(loc, ValueRange{falseValue}); });
+            Value hashAddress=rewriter.create<util::TupleElementPtrOp>(loc, idxPtrType, currEntryPtr, 1);
+            Value entryHash = rewriter.create<util::LoadOp>(loc, idxType, hashAddress);
+            Value hashMatches = b.create<arith::CmpIOp>(loc, arith::CmpIPredicate::eq, entryHash,hashed);
+            auto ifOpH = b.create<scf::IfOp>(
+               loc, hashMatches, [&](OpBuilder& b, Location loc) {
+                  Value kvAddress = rewriter.create<util::TupleElementPtrOp>(loc, kvPtrType, currEntryPtr, 2);
+                  Value keyRef = rewriter.create<util::TupleElementPtrOp>(loc, keyPtrType, kvAddress, 0);
+                  auto keyValues=keyStorageHelper.loadValuesOrdered(keyRef,rewriter,loc);
+                  Value keyMatches = equalFnBuilder(b, keyValues, lookupKey);
+                  b.create<scf::YieldOp>(loc, mlir::ValueRange{keyMatches});
+               },
+               [&](OpBuilder& b, Location loc) {
+                  b.create<scf::YieldOp>(loc, falseValue);
+               });
+            b.create<scf::YieldOp>(loc, ifOpH.getResults()); },
+         [&](OpBuilder& b, Location loc) {
+            b.create<scf::YieldOp>(loc, ValueRange{falseValue});
+         });
       auto ifOp2 = rewriter.create<scf::IfOp>(
-         loc, ifOp.getResults()[0], [&](OpBuilder& b, Location loc) { b.create<scf::YieldOp>(loc, currEntryPtr); },
+         loc, ifOp.getResults()[0],
+         [&](OpBuilder& b, Location loc) { b.create<scf::YieldOp>(loc, currEntryPtr); },
          [&](OpBuilder& b, Location loc) {
             auto initialVals = initValBuilder(rewriter);
             Value entryRef = rt::PreAggregationHashtableFragment::insert(b, loc)({adaptor.getState(), hashed})[0];

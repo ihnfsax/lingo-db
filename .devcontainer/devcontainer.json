@@ -5,8 +5,8 @@
     "build": {
         "dockerfile": "Dockerfile",
         "args": {
-            "http_proxy": "http://10.252.1.75:7890",
-            "https_proxy": "http://10.252.1.75:7890",
+            // "http_proxy": "http://10.252.1.75:7890",
+            // "https_proxy": "http://10.252.1.75:7890",
             "username": "ihnfsa"
         }
     },

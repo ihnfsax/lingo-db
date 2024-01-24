@@ -33,9 +33,9 @@ ENV LANG=en_US.UTF-8
 RUN localedef --force -i en_US -f UTF-8 en_US.UTF-8
 
 RUN git config --global user.name "ihnfsax" \
-    && git config --global user.email "kylelynx7289@gmail.com" \
-    && git config --global http.proxy ${http_proxy} \
-    && git config --global https.proxy ${https_proxy}
+    && git config --global user.email "kylelynx7289@gmail.com"
+RUN if [[ ! -z "${http_proxy}" ]] ; then git config --global http.proxy ${http_proxy} ; fi
+RUN if [[ ! -z "${https_proxy}" ]] ; then git config --global https.proxy ${https_proxy} ; fi
 
 # C++
 RUN dnf install -y libstdc++-static glibc-static g++ gdb lld cmake make llvm \
@@ -43,11 +43,9 @@ RUN dnf install -y libstdc++-static glibc-static g++ gdb lld cmake make llvm \
     flex ncurses-devel binutils-devel byacc perl
 
 # Lingo-DB debug
-RUN dnf debuginfo-install bzip2-libs-1.0.8-16.fc39.x86_64 glibc-2.38-14.fc39.x86_64 \
-    libarrow-13.0.0-2.fc39.x86_64 libbrotli-1.1.0-1.fc39.x86_64 libgcc-13.2.1-6.fc39.x86_64 \
-    liborc1-1.9.1-1.fc39.x86_64 libstdc++-13.2.1-6.fc39.x86_64 libzstd-1.5.5-4.fc39.x86_64 \
-    lz4-libs-1.9.4-4.fc39.x86_64 protobuf-3.19.6-6.fc39.x86_64 re2-20220601-3.fc39.x86_64 \
-    snappy-1.1.10-2.fc39.x86_64 utf8proc-2.7.0-5.fc39.x86_64 zlib-1.2.13-4.fc39.x86_64
+RUN dnf install -y 'dnf-command(debuginfo-install)' \
+    && dnf debuginfo-install -y bzip2-libs glibc libarrow libbrotli libgcc liborc1 \
+    libstdc++ libzstd lz4-libs protobuf re2 snappy utf8proc zlib
 
 # Run this at last
 # use vscode as regular user if argument `username` is not set

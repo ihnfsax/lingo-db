@@ -19,3 +19,9 @@ mlir-db-opt -mlir-print-op-generic snapshot-1.mlir > snapshot-1-generic.mlir
 mlir-db-opt -mlir-print-op-generic snapshot-2.mlir > snapshot-2-generic.mlir
 mlir-db-opt -mlir-print-op-generic snapshot-3.mlir > snapshot-3-generic.mlir
 mlir-db-opt -mlir-print-op-generic snapshot-4.mlir > snapshot-4-generic.mlir
+python3 docs/format.py snapshot-2.mlir
+python3 docs/format.py snapshot-2-generic.mlir
+python3 docs/format.py snapshot-3.mlir
+python3 docs/format.py snapshot-3-generic.mlir
+python3 docs/format.py snapshot-4.mlir
+python3 docs/format.py snapshot-4-generic.mlir
